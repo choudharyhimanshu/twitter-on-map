@@ -33,19 +33,19 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
-        app.receivedEvent('deviceready');
-    },
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
+        // Define a div tag with id="map_canvas"
+        var mapDiv = document.getElementById("map_canvas");
 
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
+        // Initialize the map plugin
+        var map = plugin.google.maps.Map.getMap(mapDiv);
 
-        console.log('Received Event: ' + id);
+        // You have to wait the MAP_READY event.
+        map.on(plugin.google.maps.event.MAP_READY, onMapInit);
     }
 };
+
+function onMapInit(map) {
+    console.log("Ready to go. :D");
+}
 
 app.initialize();
