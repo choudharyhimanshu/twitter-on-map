@@ -6,21 +6,13 @@ module.exports = [
         "clobbers": [
             "plugin.google.maps"
         ]
-    },
-    {
-        "file": "plugins/cordova-plugin-splashscreen/www/splashscreen.js",
-        "id": "cordova-plugin-splashscreen.SplashScreen",
-        "clobbers": [
-            "navigator.splashscreen"
-        ]
     }
 ];
 module.exports.metadata = 
 // TOP OF METADATA
 {
     "cordova-plugin-whitelist": "1.2.2",
-    "plugin.google.maps": "1.3.9",
-    "cordova-plugin-splashscreen": "3.2.2"
+    "plugin.google.maps": "1.3.9"
 };
 // BOTTOM OF METADATA
 });
