@@ -22,6 +22,7 @@ var API_BASE_TWEETS = "http://crawl-twitter.herokuapp.com/crawl/tweets/";
 
 var map;
 var curr_location;
+var count_markers;
 
 var app = {
     // Application Constructor
@@ -52,6 +53,7 @@ var onGeoSuccess = function(position) {
 // onError Callback receives a PositionError object
 //
 function onGeoError(error) {
+    alert("Location not available.");
     curr_location = new plugin.google.maps.LatLng(28.613812,77.232712);
     initMap();
 }
@@ -70,14 +72,21 @@ function initMap(){
 
 function onMapReady() {
     map.setCenter(curr_location);
-    map.setZoom(15);
+    map.setZoom(1);
     map.setMapTypeId(plugin.google.maps.MapTypeId.HYBRID);
-    map.setMyLocationEnabled(true);
+    map.setMyLocationEnabled(false);
+    map.setAllGesturesEnabled(true);
+
+    $('#resetZoomBtn').click(function(){
+        map.setCenter(curr_location);
+        map.setZoom(1);
+    });
 
     $('#searchBtn').click(function(){
         var handle = $("#handle").val();
         var type = $("#fetch_type").val();
         if(typeof handle != undefined && handle != "" && handle.length>0){
+            count_markers=0;
             if(type == "tweets"){
                 map.clear();
                 var options = { dimBackground: true };
@@ -85,33 +94,23 @@ function onMapReady() {
                 $.getJSON(API_BASE_TWEETS+handle,function(response){
                     if(response.success == true){
                         if(response.data.length>0){
-                            var count=0;
                             for(var i=0; i<response.data.length; i++){
                                 if(response.data[i].geo){
-                                    map.addMarker({
-                                        'position': new plugin.google.maps.LatLng(response.data[i].geo.lat,response.data[i].geo.lng),
-                                        'title': response.data[i].user.name + ' @' + response.data[i].user.handle,
-                                        'snippet': response.data[i].text + '\n' + response.data[i].created_at,
-                                        'icon': {
-                                            'url': response.data[i].user.photo,
-                                            'size': {
-                                                'width': 40,
-                                                'height': 40
-                                            }
-                                        },
-                                        'animation': plugin.google.maps.Animation.DROP,
-                                        'markerClick': function(marker) {
-                                            marker.showInfoWindow();
-                                        },
-                                        'infoClick': function(marker) {
-                                            // do something
-                                        }
-                                    });
-                                    count++;
+                                    var data = {
+                                        'title': response.data[i].user.name+' @'+response.data[i].user.handle,
+                                        'snippet': response.data[i].text+'\n'+response.data[i].created_at,
+                                        'icon': response.data[i].user.photo
+                                    };
+                                    addMarkerWithGeo(response.data[i].geo,data);
                                 }
-                            }
-                            if(count==0){
-                                alert("No location tagged tweets found.");
+                                else if(response.data[i].place && response.data[i].place != ""){
+                                    var data = {
+                                        'title': response.data[i].user.name+' @'+response.data[i].user.handle,
+                                        'snippet': response.data[i].text+'\n'+response.data[i].created_at,
+                                        'icon': response.data[i].user.photo
+                                    };
+                                    addMarkerWithPlace(response.data[i].place,data);
+                                }
                             }
                         }
                         else {
@@ -127,17 +126,112 @@ function onMapReady() {
                     SpinnerPlugin.activityStop();
                 });
             }
-            if(type == "followers"){
-                alert("Yet to be implemented.");
-            }
-            if(type == "following"){
-                alert("Yet to be implemented.");
+            else {
+                map.clear();
+                var options = { dimBackground: true };
+                SpinnerPlugin.activityStart("Loading...", options);
+                $.getJSON(API_BASE_PROFILE+handle,function(response){
+                    if(response.success == true){
+                        if(type == "followers"){
+                            var data = response.data.followers;
+                        }
+                        else {
+                            var data = response.data.following;
+                        }
+                        if(data.length>0){
+                            for(var i=0; i<data.length; i++){
+                                if(data[i].location != ""){
+                                    var temp_data = {
+                                        'title': data[i].name+' @'+data[i].handle,
+                                        'snippet': data[i].description,
+                                        'icon': data[i].photo
+                                    };
+                                    addMarkerWithPlace(data[i].location,temp_data);
+                                }
+                            }
+                        }
+                        else {
+                            alert("No users found");
+                        }
+                    }
+                    else {
+                        alert("Some error occurred. ERROR: "+response.message);
+                    }
+                    SpinnerPlugin.activityStop();
+                }).error(function(response){
+                    alert(JSON.stringify(response));
+                    SpinnerPlugin.activityStop();
+                });
+
             }
         }
         else {
             alert("Please enter username");
         }
     });
+}
+
+function addMarkerWithPlace(place,data){
+    plugin.google.maps.Geocoder.geocode({'address': place}, function(results) {
+        if (results.length) {
+            var result = results[0];
+            map.addMarker({
+                'position': result.position,
+                'title': data.title,
+                'snippet': data.snippet,
+                'icon': {
+                    'url': data.icon,
+                    'size': {
+                        'width': 40,
+                        'height': 40
+                    }
+                },
+                'animation': plugin.google.maps.Animation.DROP,
+                'markerClick': function(marker) {
+                    marker.showInfoWindow();
+                    map.animateCamera({
+                        'target': marker.get('position'),
+                        'duration': 1000,
+                        'zoom': 15
+                    });
+                },
+                'infoClick': function(marker) {
+                    // do something
+                }
+            });
+            count_markers++;
+            $('#resultsCount').html(count_markers);
+        }
+    });
+}
+
+function addMarkerWithGeo(geo,data){
+    map.addMarker({
+        'position': new plugin.google.maps.LatLng(geo.lat,geo.lng),
+        'title': data.title,
+        'snippet': data.snippet,
+        'icon': {
+            'url': data.icon,
+            'size': {
+                'width': 40,
+                'height': 40
+            }
+        },
+        'animation': plugin.google.maps.Animation.DROP,
+        'markerClick': function(marker) {
+            marker.showInfoWindow();
+            map.animateCamera({
+                'target': marker.get('position'),
+                'duration': 1000,
+                'zoom': 15
+            });
+        },
+        'infoClick': function(marker) {
+            // do something
+        }
+    });
+    count_markers++;
+    $('#resultsCount').html(count_markers);
 }
 
 app.initialize();
