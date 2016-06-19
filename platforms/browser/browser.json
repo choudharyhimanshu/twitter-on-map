@@ -10,6 +10,12 @@
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
         },
+        "cordova-plugin-compat": {
+            "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
+        },
+        "cordova-plugin-geolocation": {
+            "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
+        },
         "plugin.google.maps": {
             "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
         }
@@ -27,6 +33,8 @@
     ],
     "plugin_metadata": {
         "cordova-plugin-whitelist": "1.2.2",
+        "cordova-plugin-compat": "1.0.0",
+        "cordova-plugin-geolocation": "2.2.0",
         "plugin.google.maps": "1.3.9"
     }
 }

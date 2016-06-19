@@ -10,10 +10,17 @@
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
         },
+        "cordova-plugin-geolocation": {
+            "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
+        },
         "plugin.google.maps": {
             "API_KEY_FOR_ANDROID": "AIzaSyBu5qjbKw39xzhLbs6DEUEEBGhggklmPPE",
             "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
         }
     },
-    "dependent_plugins": {}
+    "dependent_plugins": {
+        "cordova-plugin-compat": {
+            "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
+        }
+    }
 }

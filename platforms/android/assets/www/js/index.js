@@ -16,6 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+var API_BASE_PROFILE;
+var API_BASE_TWEETS;
+
+var map;
+var curr_location;
+
 var app = {
     // Application Constructor
     initialize: function() {
@@ -33,19 +40,39 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
-        // Define a div tag with id="map_canvas"
-        var mapDiv = document.getElementById("map_canvas");
-
-        // Initialize the map plugin
-        var map = plugin.google.maps.Map.getMap(mapDiv);
-
-        // You have to wait the MAP_READY event.
-        map.on(plugin.google.maps.event.MAP_READY, onMapInit);
+        navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError);
     }
 };
 
-function onMapInit(map) {
-    console.log("Ready to go. :D");
+var onGeoSuccess = function(position) {
+    curr_location = new plugin.google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+    initMap();
+};
+
+// onError Callback receives a PositionError object
+//
+function onGeoError(error) {
+    curr_location = new plugin.google.maps.LatLng(28.613812,77.232712);
+    initMap();
+}
+
+function initMap(){
+    // Define a div tag with id="map_canvas"
+
+    var mapDiv = document.getElementById("map_canvas");
+
+    // Initialize the map plugin
+    map = plugin.google.maps.Map.getMap(mapDiv);
+
+    // You have to wait the MAP_READY event.
+    map.on(plugin.google.maps.event.MAP_READY, onMapReady);
+}
+
+function onMapReady() {
+    map.setCenter(curr_location);
+    map.setZoom(15);
+    map.setMapTypeId(plugin.google.maps.MapTypeId.ROADMAP);
+    map.setMyLocationEnabled(true);
 }
 
 app.initialize();
