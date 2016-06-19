@@ -17,6 +17,9 @@
     <feature name="Geocoder">
         <param name="android-package" value="plugin.google.maps.MyGeocoder" />
     </feature>
+    <feature name="SpinnerPlugin">
+        <param name="android-package" value="net.justin_credible.cordova.SpinnerPlugin" />
+    </feature>
     <allow-intent href="market:*" />
     <name>Twitter On Map</name>
     <description>
@@ -26,6 +29,7 @@
         Himanshu Choudhary
     </author>
     <content src="index.html" />
+    <allow-navigation href="*" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />

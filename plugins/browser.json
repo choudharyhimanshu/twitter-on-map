@@ -15,6 +15,9 @@
         },
         "plugin.google.maps": {
             "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
+        },
+        "cordova-plugin-spinner": {
+            "PACKAGE_NAME": "com.himanshuchoudhary.twittermap"
         }
     },
     "dependent_plugins": {

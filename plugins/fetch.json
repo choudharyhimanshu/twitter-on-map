@@ -32,5 +32,13 @@
         "variables": {
             "API_KEY_FOR_ANDROID": "AIzaSyBu5qjbKw39xzhLbs6DEUEEBGhggklmPPE"
         }
+    },
+    "cordova-plugin-spinner": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-spinner"
+        },
+        "is_top_level": true,
+        "variables": {}
     }
 }
