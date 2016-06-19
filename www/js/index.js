@@ -71,7 +71,7 @@ function initMap(){
 function onMapReady() {
     map.setCenter(curr_location);
     map.setZoom(15);
-    map.setMapTypeId(plugin.google.maps.MapTypeId.ROADMAP);
+    map.setMapTypeId(plugin.google.maps.MapTypeId.HYBRID);
     map.setMyLocationEnabled(true);
 
     $('#searchBtn').click(function(){
