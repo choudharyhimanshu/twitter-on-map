@@ -40,10 +40,13 @@
         <div class="app">
             <!-- <h3>Welcome, User!</h3> -->
             <div id="map_canvas">
+                <div id="zoomButtons">
+                    <button onclick="incrementZoom(2)">+</button>
+                    <button onclick="incrementZoom(-2)">-</button>
+                </div>
                 <div id="searchBox">
                     <p>Total Results: <span id="resultsCount"></span></p>
                     <input type="text" id="handle" size="20" placeholder="Enter twitter profile username"/>
-                    <button id="resetZoomBtn">Reset Zoom</button>
                     <select id="fetch_type">
                         <option value="tweets">Tweets</option>
                         <option value="followers">Followers</option>

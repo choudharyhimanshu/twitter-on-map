@@ -22,6 +22,7 @@ var API_BASE_TWEETS = "http://crawl-twitter.herokuapp.com/crawl/tweets/";
 
 var map;
 var curr_location;
+var curr_zoom=1;
 var count_markers;
 
 var app = {
@@ -41,11 +42,11 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
-        navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError);
+        navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError,{ timeout: 1000 });
     }
 };
 
-var onGeoSuccess = function(position) {
+function onGeoSuccess(position) {
     curr_location = new plugin.google.maps.LatLng(position.coords.latitude,position.coords.longitude);
     initMap();
 };
@@ -53,10 +54,9 @@ var onGeoSuccess = function(position) {
 // onError Callback receives a PositionError object
 //
 function onGeoError(error) {
-    alert("Location not available.");
     curr_location = new plugin.google.maps.LatLng(28.613812,77.232712);
     initMap();
-}
+};
 
 function initMap(){
     // Define a div tag with id="map_canvas"
@@ -76,11 +76,17 @@ function onMapReady() {
     map.setMapTypeId(plugin.google.maps.MapTypeId.HYBRID);
     map.setMyLocationEnabled(false);
     map.setAllGesturesEnabled(true);
-
-    $('#resetZoomBtn').click(function(){
-        map.setCenter(curr_location);
-        map.setZoom(1);
+    map.setOptions({
+        'controls': {
+            'compass': true,
+            'myLocationButton': true,
+            'indoorPicker': false,
+            'zoom': false // Only for Android
+        }
     });
+
+    curr_zoom=1;
+    $('#zoomButtons').show();
 
     $('#searchBtn').click(function(){
         var handle = $("#handle").val();
@@ -94,6 +100,7 @@ function onMapReady() {
                 $.getJSON(API_BASE_TWEETS+handle,function(response){
                     if(response.success == true){
                         if(response.data.length>0){
+                            var data_array = [];
                             for(var i=0; i<response.data.length; i++){
                                 if(response.data[i].geo){
                                     var data = {
@@ -104,14 +111,15 @@ function onMapReady() {
                                     addMarkerWithGeo(response.data[i].geo,data);
                                 }
                                 else if(response.data[i].place && response.data[i].place != ""){
-                                    var data = {
+                                    data_array.push({
                                         'title': response.data[i].user.name+' @'+response.data[i].user.handle,
                                         'snippet': response.data[i].text+'\n'+response.data[i].created_at,
-                                        'icon': response.data[i].user.photo
-                                    };
-                                    addMarkerWithPlace(response.data[i].place,data);
+                                        'icon': response.data[i].user.photo,
+                                        'place': response.data[i].place
+                                    });
                                 }
                             }
+                            addMultiMarkerWithPlaceAsync(data_array,0);
                         }
                         else {
                             alert("No tweets found");
@@ -139,16 +147,18 @@ function onMapReady() {
                             var data = response.data.following;
                         }
                         if(data.length>0){
+                            var data_array = [];
                             for(var i=0; i<data.length; i++){
                                 if(data[i].location != ""){
-                                    var temp_data = {
+                                    data_array.push({
                                         'title': data[i].name+' @'+data[i].handle,
                                         'snippet': data[i].description,
-                                        'icon': data[i].photo
-                                    };
-                                    addMarkerWithPlace(data[i].location,temp_data);
+                                        'icon': data[i].photo,
+                                        'place': data[i].location
+                                    });
                                 }
                             }
+                            addMultiMarkerWithPlaceAsync(data_array,0);
                         }
                         else {
                             alert("No users found");
@@ -169,6 +179,13 @@ function onMapReady() {
             alert("Please enter username");
         }
     });
+}
+
+function incrementZoom(value){
+    if((value<0 && curr_zoom>2) || (value>0 && curr_zoom<19)){
+        curr_zoom+=value;
+        map.setZoom(curr_zoom);
+    }    
 }
 
 function addMarkerWithPlace(place,data){
@@ -194,8 +211,9 @@ function addMarkerWithPlace(place,data){
                     map.animateCamera({
                         'target': marker.get('position'),
                         'duration': 1000,
-                        'zoom': 15
+                        'zoom': 13
                     });
+                    curr_zoom=13;
                 },
                 'infoClick': function(marker) {
                     // do something
@@ -205,6 +223,46 @@ function addMarkerWithPlace(place,data){
             $('#resultsCount').html(count_markers);
         }
     });
+}
+
+function addMultiMarkerWithPlaceAsync(dataArray,index){
+    if(index < dataArray.length){
+        plugin.google.maps.Geocoder.geocode({'address': dataArray[index].place}, function(results) {
+            if (results.length) {
+                var result = results[0];
+                result.position.lat += (Math.random()/1000);
+                result.position.lng += (Math.random()/1000);
+                map.addMarker({
+                    'position': result.position,
+                    'title': dataArray[index].title,
+                    'snippet': dataArray[index].snippet,
+                    'icon': {
+                        'url': dataArray[index].icon,
+                        'size': {
+                            'width': 40,
+                            'height': 40
+                        }
+                    },
+                    'animation': plugin.google.maps.Animation.DROP,
+                    'markerClick': function(marker) {
+                        marker.showInfoWindow();
+                        map.animateCamera({
+                            'target': marker.get('position'),
+                            'duration': 1000,
+                            'zoom': 13
+                        });
+                        curr_zoom=13;
+                    },
+                    'infoClick': function(marker) {
+                        // do something
+                    }
+                });
+                count_markers++;
+                $('#resultsCount').html(count_markers);
+            }
+            addMultiMarkerWithPlaceAsync(dataArray,index+1);
+        });
+    }
 }
 
 function addMarkerWithGeo(geo,data){
@@ -225,8 +283,9 @@ function addMarkerWithGeo(geo,data){
             map.animateCamera({
                 'target': marker.get('position'),
                 'duration': 1000,
-                'zoom': 15
+                'zoom': 13
             });
+            curr_zoom=13;
         },
         'infoClick': function(marker) {
             // do something
